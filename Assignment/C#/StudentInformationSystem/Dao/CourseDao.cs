@@ -46,7 +46,7 @@ namespace StudentInformationSystem.Dao
 
         public List<Course> GetAllCourses()
         {
-            var courses = new List<Course>(); // ✅ simplified collection initialization
+            var courses = new List<Course>(); 
 
             try
             {

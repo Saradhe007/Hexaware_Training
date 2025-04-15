@@ -71,7 +71,7 @@ namespace StudentInformationSystem.Main
                             var student = new Student(studentId, fname, lname, dob, email, phone);
                             string insertStudentQuery = $"INSERT INTO Student VALUES ({student.StudentId}, '{student.FirstName}', '{student.LastName}', '{student.DateOfBirth:yyyy-MM-dd}', '{student.Email}', '{student.PhoneNumber}')";
                             ExecuteNonQuery(insertStudentQuery);
-                            Console.WriteLine("✅ Student added successfully.");
+                            Console.WriteLine("Student added successfully.");
                             break;
 
                         case 2:
@@ -92,7 +92,7 @@ namespace StudentInformationSystem.Main
                             var course = new Course(courseId, courseName, courseCode);
                             string insertCourseQuery = $"INSERT INTO Course (CourseId, CourseName, CourseCode) VALUES ({course.CourseId}, '{course.CourseName}', '{course.CourseCode}')";
                             ExecuteNonQuery(insertCourseQuery);
-                            Console.WriteLine("✅ Course added successfully.");
+                            Console.WriteLine("Course added successfully.");
                             break;
 
                         case 3:
@@ -117,7 +117,7 @@ namespace StudentInformationSystem.Main
                             var teacher = new Teacher(teacherId, tFname, tLname, tEmail);
                             string insertTeacherQuery = $"INSERT INTO Teacher (TeacherId, FirstName, LastName, Email) VALUES ({teacher.TeacherId}, '{teacher.FirstName}', '{teacher.LastName}', '{teacher.Email}')";
                             ExecuteNonQuery(insertTeacherQuery);
-                            Console.WriteLine("✅ Teacher added successfully.");
+                            Console.WriteLine("Teacher added successfully.");
                             break;
 
                         case 4:
@@ -138,7 +138,7 @@ namespace StudentInformationSystem.Main
                             DateTime enrollDate = DateTime.Now;
                             string enrollQuery = $"INSERT INTO Enrollment (EnrollmentId, StudentId, CourseId, EnrollmentDate) VALUES ({enrollId}, {stuId}, {courId}, '{enrollDate:yyyy-MM-dd}')";
                             ExecuteNonQuery(enrollQuery);
-                            Console.WriteLine("✅ Student enrolled in course.");
+                            Console.WriteLine("Student enrolled in course.");
                             break;
 
                         case 5:
@@ -162,7 +162,7 @@ namespace StudentInformationSystem.Main
 
                             string paymentQuery = $"INSERT INTO Payment (PaymentId, StudentId, Amount, PaymentDate) VALUES ({paymentId}, {sid}, {amount}, '{payDate:yyyy-MM-dd}')";
                             ExecuteNonQuery(paymentQuery);
-                            Console.WriteLine("✅ Payment recorded successfully.");
+                            Console.WriteLine("Payment recorded successfully.");
                             break;
 
                         case 6:
@@ -178,11 +178,11 @@ namespace StudentInformationSystem.Main
 
                             string updateCourse = $"UPDATE Courses SET TeacherId={assignTeacherId} WHERE CourseId={assignCourseId}";
                             ExecuteNonQuery(updateCourse);
-                            Console.WriteLine("✅ Teacher assigned to course.");
+                            Console.WriteLine("Teacher assigned to course.");
                             break;
 
                         case 0:
-                            Console.WriteLine("Exiting... 🚪");
+                            Console.WriteLine("Exiting..");
                             return;
 
                         default:
@@ -192,7 +192,7 @@ namespace StudentInformationSystem.Main
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[❌] Error: {ex.Message}");
+                    Console.WriteLine($"Error: {ex.Message}");
                 }
             }
         }
