@@ -4,9 +4,11 @@ namespace CarConnect.Util
 {
     public static class DBConnUtil
     {
-        public static SqlConnection GetConnection()
+        public static SqlConnection GetConnection(string configFile)
         {
-            return new SqlConnection(DBPropertyUtil.GetConnectionString());
+            SqlConnection sqlConnection;
+            string connstr = DBPropertyUtil.GetConnectionString(configFile);
+            return new SqlConnection(connstr);
         }
     }
 }

@@ -9,10 +9,10 @@ namespace CarConnect.Dao
 {
     public interface ICustomerDao
     {
+        Customer RegisterCustomer(Customer customer);
         Customer GetCustomerById(int customerId);
         Customer GetCustomerByUsername(string username);
-        void RegisterCustomer(Customer customer);
-        void UpdateCustomer(Customer customer);
-        void DeleteCustomer(int customerId);
+        Customer UpdateCustomer(Customer customer);
+        bool DeleteCustomer(int customerId);
     }
 }

@@ -3,13 +3,15 @@ using CarConnect.Entity;
 
 namespace CarConnect.Dao
 {
-    public interface IVehicleDao
+    public interface IVehicleDao<T>
     {
-        Vehicle GetVehicleById(int vehicleId);
-        List<Vehicle> GetAvailableVehicles();
-        void AddVehicle(Vehicle vehicle);
-        void UpdateVehicle(Vehicle vehicle);
-        void RemoveVehicle(int vehicleId);
-        List<Vehicle> GetAllVehicles();  
+        T AddVehicle(T vehicle);           
+        T UpdateVehicle(T vehicle);        
+        bool RemoveVehicle(int vehicleId); 
+        T GetVehicleById(int vehicleId);
+        List<T> GetAvailableVehicles();
+        List<T> GetAllVehicles();          
     }
+
+
 }

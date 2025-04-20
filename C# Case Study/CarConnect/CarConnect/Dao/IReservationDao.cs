@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace CarConnect.Dao
 {
-    public interface IReservationDao
+    public interface IReservationDao<T>
     {
-        Reservation GetReservationById(int reservationId);
-        List<Reservation> GetReservationsByCustomerId(int customerId);
-        void CreateReservation(Reservation reservation);
-        void UpdateReservation(Reservation reservation);
-        void CancelReservation(int reservationId);
+        T CreateReservation(T reservation);
+        T UpdateReservation(T reservation);
+        bool CancelReservation(int reservationId);
+        T GetReservationById(int reservationId);
+        List<T> GetReservationsByCustomerId(int customerId);
     }
+
 }

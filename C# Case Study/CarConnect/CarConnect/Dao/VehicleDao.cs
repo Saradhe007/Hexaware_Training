@@ -1,143 +1,163 @@
-﻿using CarConnect.Entity;
-using CarConnect.Util;
-using Microsoft.Data.SqlClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using CarConnect.Entity;
+using CarConnect.Util;
+using CarConnect.Dao;
+using Microsoft.Data.SqlClient;
 
-namespace CarConnect.Dao
+namespace CarConnectApp.DAO
 {
-    public class VehicleDao : IVehicleDao
+    public class VehicleDao : IVehicleDao<Vehicle>
     {
-        private readonly string _connectionString;
-
-        public VehicleDao()
+        public Vehicle AddVehicle(Vehicle vehicle)
         {
-            _connectionString = DBPropertyUtil.GetConnectionString();
-        }
-        public List<Vehicle> GetAllVehicles()
-        {
-            string query = "SELECT * FROM Vehicle";
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                _conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-                List<Vehicle> vehicles = new List<Vehicle>();
-                while (reader.Read())
-                {
-                    vehicles.Add(MapToVehicle(reader));
-                }
-                return vehicles;
-            }
-        }
-
-        public void AddVehicle(Vehicle vehicle)
-        {
-            string query = "INSERT INTO Vehicle (Model, Make, Year, Color, RegistrationNumber, Availability, DailyRate) VALUES (@Model, @Make, @Year, @Color, @RegistrationNumber, @Availability, @DailyRate)";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
-            {
-                SqlCommand cmd = new SqlCommand(query, _conn);
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand(@"INSERT INTO Vehicle (Model, Make, Year, Color, RegistrationNumber, Availability, DailyRate)
+                                                        OUTPUT INSERTED.VehicleId
+                                                        VALUES (@Model, @Make, @Year, @Color, @RegistrationNumber, @Availability, @DailyRate)", sqlCon);
                 cmd.Parameters.AddWithValue("@Model", vehicle.Model);
                 cmd.Parameters.AddWithValue("@Make", vehicle.Make);
                 cmd.Parameters.AddWithValue("@Year", vehicle.Year);
                 cmd.Parameters.AddWithValue("@Color", vehicle.Color);
                 cmd.Parameters.AddWithValue("@RegistrationNumber", vehicle.RegistrationNumber);
-                cmd.Parameters.AddWithValue("@Availability", vehicle.Availability);
+                cmd.Parameters.AddWithValue("@Availability", vehicle.Availability ? 1 : 0);
                 cmd.Parameters.AddWithValue("@DailyRate", vehicle.DailyRate);
 
-                _conn.Open();
-                cmd.ExecuteNonQuery();
+                var insertedId = cmd.ExecuteScalar();
+                vehicle.VehicleId = Convert.ToInt32(insertedId);
+                return vehicle;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return null;
             }
         }
 
         public Vehicle GetVehicleById(int vehicleId)
         {
-            string query = "SELECT * FROM Vehicle WHERE VehicleID = @VehicleID";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@VehicleID", vehicleId);
-                _conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand("SELECT * FROM Vehicle WHERE VehicleId = @VehicleId", sqlCon);
+                cmd.Parameters.AddWithValue("@VehicleId", vehicleId);
 
-                Vehicle vehicle = null;
+                using SqlDataReader reader = cmd.ExecuteReader();
                 if (reader.Read())
                 {
-                    vehicle = MapToVehicle(reader);
+                    return MapToVehicle(reader);
                 }
-
-                return vehicle;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            return null;
         }
 
         public List<Vehicle> GetAvailableVehicles()
         {
-            string query = "SELECT * FROM Vehicle WHERE Availability = 1";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            var list = new List<Vehicle>();
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                _conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                List<Vehicle> vehicles = new List<Vehicle>();
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand("SELECT * FROM Vehicle WHERE Availability = 1", sqlCon);
+                using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    vehicles.Add(MapToVehicle(reader));
+                    list.Add(MapToVehicle(reader));
                 }
-
-                return vehicles;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            return list;
         }
 
-        public void UpdateVehicle(Vehicle vehicle)
+        public Vehicle UpdateVehicle(Vehicle vehicle)
         {
-            string query = "UPDATE Vehicle SET Model=@Model, Make=@Make, Year=@Year, Color=@Color, RegistrationNumber=@RegistrationNumber, Availability=@Availability, DailyRate=@DailyRate WHERE VehicleID=@VehicleID";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand(@"UPDATE Vehicle SET 
+                    Model = @Model, Make = @Make, Year = @Year, Color = @Color, 
+                    RegistrationNumber = @RegistrationNumber, Availability = @Availability, 
+                    DailyRate = @DailyRate WHERE VehicleId = @VehicleId", sqlCon);
                 cmd.Parameters.AddWithValue("@Model", vehicle.Model);
                 cmd.Parameters.AddWithValue("@Make", vehicle.Make);
                 cmd.Parameters.AddWithValue("@Year", vehicle.Year);
                 cmd.Parameters.AddWithValue("@Color", vehicle.Color);
                 cmd.Parameters.AddWithValue("@RegistrationNumber", vehicle.RegistrationNumber);
-                cmd.Parameters.AddWithValue("@Availability", vehicle.Availability);
+                cmd.Parameters.AddWithValue("@Availability", vehicle.Availability ? 1 : 0);
                 cmd.Parameters.AddWithValue("@DailyRate", vehicle.DailyRate);
-                cmd.Parameters.AddWithValue("@VehicleID", vehicle.VehicleId);
+                cmd.Parameters.AddWithValue("@VehicleId", vehicle.VehicleId);
 
-                _conn.Open();
                 cmd.ExecuteNonQuery();
+                return vehicle;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return null;
             }
         }
 
-        public void RemoveVehicle(int vehicleId)
+        public bool RemoveVehicle(int vehicleId)
         {
-            string query = "DELETE FROM Vehicle WHERE VehicleID = @VehicleID";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@VehicleID", vehicleId);
-                _conn.Open();
-                cmd.ExecuteNonQuery();
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand("DELETE FROM Vehicle WHERE VehicleId = @VehicleId", sqlCon);
+                cmd.Parameters.AddWithValue("@VehicleId", vehicleId);
+                return cmd.ExecuteNonQuery() > 0;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return false;
+            }
+        }
+        public List<Vehicle> GetAllVehicles()
+        {
+            var list = new List<Vehicle>();
+            try
+            {
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand("SELECT * FROM Vehicle", sqlCon);
+                using SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    list.Add(MapToVehicle(reader));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            return list;
         }
 
         private Vehicle MapToVehicle(SqlDataReader reader)
         {
             return new Vehicle
             {
-                VehicleId = Convert.ToInt32(reader["VehicleID"]),
-                Model = reader["Model"].ToString(),
-                Make = reader["Make"].ToString(),
-                Year = reader["Year"].ToString(),
-                Color = reader["Color"].ToString(),
-                RegistrationNumber = reader["RegistrationNumber"].ToString(),
-                Availability = Convert.ToBoolean(reader["Availability"]),
-                DailyRate = Convert.ToDecimal(reader["DailyRate"])
+                VehicleId = reader.GetInt32(0),
+                Model = reader.GetString(1),
+                Make = reader.GetString(2),
+                Year = reader.GetString(3),
+                Color = reader.GetString(4),
+                RegistrationNumber = reader.GetString(5),
+                Availability = reader.GetBoolean(6),
+                DailyRate = reader.GetDecimal(7)
             };
         }
     }

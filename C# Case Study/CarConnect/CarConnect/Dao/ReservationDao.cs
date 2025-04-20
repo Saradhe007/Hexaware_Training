@@ -1,104 +1,121 @@
 ﻿using CarConnect.Entity;
 using CarConnect.Util;
+using CarConnect.Dao;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 
-namespace CarConnect.Dao
+namespace CarConnectApp.DAO
 {
-    public class ReservationDao : IReservationDao
+    public class ReservationDao : IReservationDao<Reservation>
     {
-        private readonly string _connectionString;
-
-        public ReservationDao()
+        public Reservation CreateReservation(Reservation reservation)
         {
-            _connectionString = DBPropertyUtil.GetConnectionString();
-        }
-
-        public void CreateReservation(Reservation reservation)
-        {
-            string query = "INSERT INTO Reservation VALUES (@CustomerID, @VehicleID, @StartDate, @EndDate, @TotalCost, @Status)";
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@CustomerID", reservation.CustomerId);
-                cmd.Parameters.AddWithValue("@VehicleID", reservation.VehicleId);
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand(@"INSERT INTO Reservation (CustomerId, VehicleId, StartDate, EndDate, TotalCost, Status)
+                                                        OUTPUT INSERTED.ReservationID
+                                                        VALUES (@CustomerId, @VehicleId, @StartDate, @EndDate, @TotalCost, @Status)", sqlCon);
+                cmd.Parameters.AddWithValue("@CustomerId", reservation.CustomerId);
+                cmd.Parameters.AddWithValue("@VehicleId", reservation.VehicleId);
                 cmd.Parameters.AddWithValue("@StartDate", reservation.StartDate);
                 cmd.Parameters.AddWithValue("@EndDate", reservation.EndDate);
                 cmd.Parameters.AddWithValue("@TotalCost", reservation.TotalCost);
                 cmd.Parameters.AddWithValue("@Status", reservation.Status);
 
-                _conn.Open();
-                cmd.ExecuteNonQuery();
+                reservation.ReservationId = (int)cmd.ExecuteScalar();
+                return reservation;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return null;
             }
         }
 
         public Reservation GetReservationById(int reservationId)
         {
-            string query = "SELECT * FROM Reservation WHERE ReservationID = @ReservationID";
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@ReservationID", reservationId);
-                _conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand("SELECT * FROM Reservation WHERE ReservationId = @ReservationId", sqlCon);
+                cmd.Parameters.AddWithValue("@ReservationId", reservationId);
 
-                Reservation reservation = null;
+                using SqlDataReader reader = cmd.ExecuteReader();
                 if (reader.Read())
                 {
-                    reservation = MapToReservation(reader);
+                    return MapToReservation(reader);
                 }
-
-                return reservation;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            return null;
         }
 
         public List<Reservation> GetReservationsByCustomerId(int customerId)
         {
-            string query = "SELECT * FROM Reservation WHERE CustomerID = @CustomerID";
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            var list = new List<Reservation>();
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@CustomerID", customerId);
-                _conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                List<Reservation> reservations = new List<Reservation>();
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand("SELECT * FROM Reservation WHERE CustomerId= @CustomerId", sqlCon);
+                cmd.Parameters.AddWithValue("@CustomerId", customerId);
+                using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    reservations.Add(MapToReservation(reader));
+                    list.Add(MapToReservation(reader));
                 }
-
-                return reservations;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            return list;
         }
 
-        public void UpdateReservation(Reservation reservation)
+        public Reservation UpdateReservation(Reservation reservation)
         {
-            string query = "UPDATE Reservation SET StartDate=@StartDate, EndDate=@EndDate, TotalCost=@TotalCost, Status=@Status WHERE ReservationID=@ReservationID";
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand(@"UPDATE Reservation SET StartDate = @StartDate, EndDate = @EndDate, TotalCost = @TotalCost, Status = @Status WHERE ReservationId = @ReservationId", sqlCon);
                 cmd.Parameters.AddWithValue("@StartDate", reservation.StartDate);
                 cmd.Parameters.AddWithValue("@EndDate", reservation.EndDate);
                 cmd.Parameters.AddWithValue("@TotalCost", reservation.TotalCost);
                 cmd.Parameters.AddWithValue("@Status", reservation.Status);
-                cmd.Parameters.AddWithValue("@ReservationID", reservation.ReservationId);
+                cmd.Parameters.AddWithValue("@ReservationId", reservation.ReservationId);
 
-                _conn.Open();
                 cmd.ExecuteNonQuery();
+                return reservation;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return null;
             }
         }
 
-        public void CancelReservation(int reservationId)
+        public bool CancelReservation(int reservationId)
         {
-            string query = "DELETE FROM Reservation WHERE ReservationID = @ReservationID";
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@ReservationID", reservationId);
-                _conn.Open();
-                cmd.ExecuteNonQuery();
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using SqlCommand cmd = new SqlCommand("DELETE FROM Reservation WHERE ReservationId = @ReservationId", sqlCon);
+                cmd.Parameters.AddWithValue("@ReservationId", reservationId);
+                return cmd.ExecuteNonQuery() > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return false;
             }
         }
 
@@ -106,14 +123,15 @@ namespace CarConnect.Dao
         {
             return new Reservation
             {
-                ReservationId = Convert.ToInt32(reader["ReservationID"]),
-                CustomerId = Convert.ToInt32(reader["CustomerID"]),
-                VehicleId = Convert.ToInt32(reader["VehicleID"]),
-                StartDate = Convert.ToDateTime(reader["StartDate"]),
-                EndDate = Convert.ToDateTime(reader["EndDate"]),
-                TotalCost = Convert.ToDecimal(reader["TotalCost"]),
-                Status = reader["Status"].ToString()
+                ReservationId = reader.GetInt32(reader.GetOrdinal("ReservationID")),
+                CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerID")),
+                VehicleId = reader.GetInt32(reader.GetOrdinal("VehicleID")),
+                StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                TotalCost = reader.GetDecimal(reader.GetOrdinal("TotalCost")),
+                Status = reader["Status"].ToString() 
             };
         }
+
     }
 }

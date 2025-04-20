@@ -1,141 +1,158 @@
-﻿using CarConnect.Entity;
-using CarConnect.Util;
+﻿
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using CarConnect.Entity;
+using CarConnect.Dao;
+using CarConnect.Util;
 
-namespace CarConnect.Dao
+namespace CarConnectApp.DAO
 {
     public class CustomerDao : ICustomerDao
     {
-        private readonly string _connectionString;
-
-        public CustomerDao()
+        public Customer RegisterCustomer(Customer customer)
         {
-            _connectionString = DBPropertyUtil.GetConnectionString();
-        }
-
-        public void RegisterCustomer(Customer customer)
-        {
-            string query = @"INSERT INTO Customer (FirstName, LastName, Email, PhoneNumber, Username, Password, DateOfBirth, JoinDate)
-                             VALUES (@FirstName, @LastName, @Email, @PhoneNumber, @Username, @Password, @DateOfBirth, @JoinDate)";
-
-            using SqlConnection conn = new SqlConnection(_connectionString);
-            using SqlCommand cmd = new SqlCommand(query, conn);
-
-            cmd.Parameters.AddWithValue("@FirstName", customer.FirstName);
-            cmd.Parameters.AddWithValue("@LastName", customer.LastName);
-            cmd.Parameters.AddWithValue("@Email", customer.Email);
-            cmd.Parameters.AddWithValue("@PhoneNumber", customer.PhoneNumber);
-            cmd.Parameters.AddWithValue("@Username", customer.Username);
-            cmd.Parameters.AddWithValue("@Password", customer.Password);
-            cmd.Parameters.AddWithValue("@RegistrationDate", customer.RegistrationDate);
-
-            conn.Open();
-            cmd.ExecuteNonQuery();
-        }
-
-        public Customer? GetCustomerById(int customerId)
-        {
-            string query = "SELECT * FROM Customer WHERE CustomerId = @CustomerId";
-
-            using SqlConnection conn = new SqlConnection(_connectionString);
-            using SqlCommand cmd = new SqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@CustomerId", customerId);
-
-            conn.Open();
-            using SqlDataReader reader = cmd.ExecuteReader();
-            if (reader.Read())
+            try
             {
-                return MapToCustomer(reader);
-            }
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO Customer (FirstName, LastName, Email, PhoneNumber, Address, Username, Password, RegistrationDate) VALUES (@FirstName, @LastName, @Email, @PhoneNumber, @Address, @Username, @Password, @RegistrationDate)", sqlCon))
+                {
+                    cmd.Parameters.AddWithValue("@FirstName", customer.FirstName);
+                    cmd.Parameters.AddWithValue("@LastName", customer.LastName);
+                    cmd.Parameters.AddWithValue("@Email", customer.Email);
+                    cmd.Parameters.AddWithValue("@PhoneNumber", customer.PhoneNumber);
+                    cmd.Parameters.AddWithValue("@Address", customer.Address);
+                    cmd.Parameters.AddWithValue("@Username", customer.Username);
+                    cmd.Parameters.AddWithValue("@Password", customer.Password);
+                    cmd.Parameters.AddWithValue("@RegistrationDate", customer.RegistrationDate);
 
+                    cmd.ExecuteNonQuery();
+                    return customer;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return null;
+            }
+        }
+
+        public Customer GetCustomerById(int customerId)
+        {
+            try
+            {
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT * FROM Customer WHERE CustomerID = @CustomerID", sqlCon))
+                {
+                    cmd.Parameters.AddWithValue("@CustomerID", customerId);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new Customer
+                            {
+                                CustomerId = reader.GetInt32(0),
+                                FirstName = reader.GetString(1),
+                                LastName = reader.GetString(2),
+                                Email = reader.GetString(3),
+                                PhoneNumber = reader.GetString(4),
+                                Address = reader.GetString(5),
+                                Username = reader.GetString(6),
+                                Password = reader.GetString(7),
+                                RegistrationDate = reader.GetDateTime(8)
+                            };
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
             return null;
         }
 
-        public Customer? GetCustomerByUsername(string username)
+        public Customer GetCustomerByUsername(string username)
         {
-            string query = "SELECT * FROM Customer WHERE Username = @Username";
-
-            using SqlConnection conn = new SqlConnection(_connectionString);
-            using SqlCommand cmd = new SqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@Username", username);
-
-            conn.Open();
-            using SqlDataReader reader = cmd.ExecuteReader();
-            if (reader.Read())
+            try
             {
-                return MapToCustomer(reader);
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT * FROM Customer WHERE Username = @Username", sqlCon))
+                {
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new Customer
+                            {
+                                CustomerId = reader.GetInt32(0),
+                                FirstName = reader.GetString(1),
+                                LastName = reader.GetString(2),
+                                Email = reader.GetString(3),
+                                PhoneNumber = reader.GetString(4),
+                                Address = reader.GetString(5),
+                                Username = reader.GetString(6),
+                                Password = reader.GetString(7),
+                                RegistrationDate = reader.GetDateTime(8)
+                            };
+                        }
+                    }
+                }
             }
-
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
             return null;
         }
 
-        public List<Customer> GetAllCustomers()
+        public Customer UpdateCustomer(Customer customer)
         {
-            string query = "SELECT * FROM Customer";
-            List<Customer> customers = new();
-
-            using SqlConnection conn = new SqlConnection(_connectionString);
-            using SqlCommand cmd = new SqlCommand(query, conn);
-
-            conn.Open();
-            using SqlDataReader reader = cmd.ExecuteReader();
-            while (reader.Read())
+            try
             {
-                customers.Add(MapToCustomer(reader));
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using (SqlCommand cmd = new SqlCommand("UPDATE Customer SET FirstName = @FirstName, LastName = @LastName, Email = @Email, PhoneNumber = @PhoneNumber, Address = @Address, Password = @Password WHERE CustomerId = @CustomerId", sqlCon))
+                {
+                    cmd.Parameters.AddWithValue("@FirstName", customer.FirstName);
+                    cmd.Parameters.AddWithValue("@LastName", customer.LastName);
+                    cmd.Parameters.AddWithValue("@Email", customer.Email);
+                    cmd.Parameters.AddWithValue("@PhoneNumber", customer.PhoneNumber);
+                    cmd.Parameters.AddWithValue("@Address", customer.Address);
+                    cmd.Parameters.AddWithValue("@Password", customer.Password);
+                    cmd.Parameters.AddWithValue("@CustomerID", customer.CustomerId);
+                    cmd.ExecuteNonQuery();
+                    return customer;
+                }
             }
-
-            return customers;
-        }
-
-        public void UpdateCustomer(Customer customer)
-        {
-            string query = @"UPDATE Customer 
-                             SET FirstName = @FirstName, LastName = @LastName, Email = @Email, 
-                                 PhoneNumber = @PhoneNumber, Password = @Password, 
-                                 DateOfBirth = @DateOfBirth 
-                             WHERE CustomerId = @CustomerId";
-
-            using SqlConnection conn = new SqlConnection(_connectionString);
-            using SqlCommand cmd = new SqlCommand(query, conn);
-
-            cmd.Parameters.AddWithValue("@FirstName", customer.FirstName);
-            cmd.Parameters.AddWithValue("@LastName", customer.LastName);
-            cmd.Parameters.AddWithValue("@Email", customer.Email);
-            cmd.Parameters.AddWithValue("@PhoneNumber", customer.PhoneNumber);
-            cmd.Parameters.AddWithValue("@Password", customer.Password);
-            cmd.Parameters.AddWithValue("@CustomerId", customer.CustomerId);
-
-            conn.Open();
-            cmd.ExecuteNonQuery();
-        }
-
-        public void DeleteCustomer(int customerId)
-        {
-            string query = "DELETE FROM Customer WHERE CustomerId = @CustomerId";
-
-            using SqlConnection conn = new SqlConnection(_connectionString);
-            using SqlCommand cmd = new SqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@CustomerId", customerId);
-
-            conn.Open();
-            cmd.ExecuteNonQuery();
-        }
-
-        private Customer MapToCustomer(SqlDataReader reader)
-        {
-            return new Customer
+            catch (Exception ex)
             {
-                CustomerId = Convert.ToInt32(reader["CustomerId"]),
-                FirstName = reader["FirstName"].ToString(),
-                LastName = reader["LastName"].ToString(),
-                Email = reader["Email"].ToString(),
-                PhoneNumber = reader["PhoneNumber"].ToString(),
-                Username = reader["Username"].ToString(),
-                Password = reader["Password"].ToString(),
-                RegistrationDate = Convert.ToDateTime(reader["RegistrationDate"])
-            };
+                Console.WriteLine("Error: " + ex.Message);
+                return null;
+            }
+        }
+
+        public bool DeleteCustomer(int customerId)
+        {
+            try
+            {
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM Customer WHERE CustomerID = @CustomerID", sqlCon))
+                {
+                    cmd.Parameters.AddWithValue("@CustomerID", customerId);
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return false;
+            }
         }
     }
 }

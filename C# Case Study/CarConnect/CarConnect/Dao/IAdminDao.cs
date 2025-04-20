@@ -7,13 +7,15 @@ using System.Threading.Tasks;
 
 namespace CarConnect.Dao
 {
-    public interface IAdminDao
+    public interface IAdminDao<T>
     {
+        Admin RegisterAdmin(Admin admin);
 
         Admin GetAdminById(int adminId);
         Admin GetAdminByUsername(string username);
-        void RegisterAdmin(Admin admin);
-        void UpdateAdmin(Admin admin);
-        void DeleteAdmin(int adminId);
+        Admin UpdateAdmin(Admin admin);
+        bool DeleteAdmin(int adminId);
+        Admin AdminLogin(string username, string password);
     }
+
 }

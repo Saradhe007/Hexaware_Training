@@ -1,27 +1,164 @@
-﻿using CarConnect.Entity;
-using CarConnect.Util;
+﻿using System;
+using CarConnect.Dao;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
+using CarConnect.Entity;
+using CarConnect.exception;
+using CarConnect.Util;
 
-namespace CarConnect.Dao
+namespace CarConnectApp.DAO
 {
-    public class AdminDao : IAdminDao
+    public class AdminDao : IAdminDao<Admin>
     {
-        private readonly string _connectionString;
-
-        public AdminDao()
+        // Register a new Admin
+        public Admin AdminLogin(string username, string password)
         {
-            _connectionString = DBPropertyUtil.GetConnectionString();
+            try
+            {
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+
+                // Query to check if admin with provided credentials exists
+                string query = @"SELECT FirstName, LastName, Email, PhoneNumber, Username, Role, JoinDate 
+                                 FROM Admin 
+                                 WHERE Username = @Username AND Password = @Password";
+
+                using SqlCommand cmd = new SqlCommand(query, sqlCon);
+                cmd.Parameters.AddWithValue("@Username", username);
+                cmd.Parameters.AddWithValue("@Password", password); // Ideally, you'd hash the password before storing/fetching
+
+                using SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.HasRows) // If a record is found
+                {
+                    // Assuming we get the data from the reader and map it to an Admin object
+                    reader.Read(); // Move to the first (and hopefully only) row
+                    Admin admin = new Admin
+                    {
+                        FirstName = reader["FirstName"].ToString(),
+                        LastName = reader["LastName"].ToString(),
+                        Email = reader["Email"].ToString(),
+                        PhoneNumber = reader["PhoneNumber"].ToString(),
+                        Username = reader["Username"].ToString(),
+                        Role = reader["Role"].ToString(),
+                        JoinDate = Convert.ToDateTime(reader["JoinDate"])
+                    };
+
+                    return admin; // Return the admin object if login is successful
+                }
+                else
+                {
+                    throw new Exception("Invalid username or password.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as needed
+                throw new Exception("Error during login process: " + ex.Message);
+            }
         }
 
-        public void RegisterAdmin(Admin admin)
+        // Register a new Admin (implementation)
+        public Admin RegisterAdmin(Admin admin)
         {
-            string query = "INSERT INTO Admin (FirstName, LastName, Email, PhoneNumber, Username, Password, Role, JoinDate) VALUES (@FirstName, @LastName, @Email, @PhoneNumber, @Username, @Password, @Role, @JoinDate)";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            try
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+
+                // SQL query to insert a new Admin record into the database
+                string query = @"INSERT INTO Admin 
+                                 (FirstName, LastName, Email, PhoneNumber, Username, Password, Role, JoinDate)
+                                 VALUES (@FirstName, @LastName, @Email, @PhoneNumber, @Username, @Password, @Role, @JoinDate)";
+
+                using SqlCommand cmd = new SqlCommand(query, sqlCon);
+                cmd.Parameters.AddWithValue("@FirstName", admin.FirstName);
+                cmd.Parameters.AddWithValue("@LastName", admin.LastName);
+                cmd.Parameters.AddWithValue("@Email", admin.Email);
+                cmd.Parameters.AddWithValue("@PhoneNumber", admin.PhoneNumber);
+                cmd.Parameters.AddWithValue("@Username", admin.Username);
+                cmd.Parameters.AddWithValue("@Password", admin.Password); // Ideally, hash the password
+                cmd.Parameters.AddWithValue("@Role", admin.Role);
+                cmd.Parameters.AddWithValue("@JoinDate", admin.JoinDate);
+
+                cmd.ExecuteNonQuery();
+                return admin; // Return the Admin after registering it
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception
+                throw new Exception("Error during registration process: " + ex.Message);
+            }
+        }
+
+        // Get Admin by ID
+        public Admin GetAdminById(int adminId)
+        {
+            try
+            {
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+
+                using SqlCommand cmd = new SqlCommand("SELECT * FROM Admin WHERE AdminID = @AdminID", sqlCon);
+                cmd.Parameters.AddWithValue("@AdminID", adminId);
+
+                using SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    return MapToAdmin(reader);
+                }
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("SQL Error: " + ex.Message);
+            }
+
+            return null;
+        }
+
+        // Get Admin by Username
+        public Admin GetAdminByUsername(string username)
+        {
+            try
+            {
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+
+                using SqlCommand cmd = new SqlCommand("SELECT * FROM Admin WHERE Username = @Username", sqlCon);
+                cmd.Parameters.AddWithValue("@Username", username);
+
+                using SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    return MapToAdmin(reader);
+                }
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("SQL Error: " + ex.Message);
+            }
+
+            return null;
+        }
+
+        // Update Admin
+        public Admin UpdateAdmin(Admin admin)
+        {
+            try
+            {
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+
+                string query = @"UPDATE Admin SET 
+                                 FirstName = @FirstName, 
+                                 LastName = @LastName, 
+                                 Email = @Email, 
+                                 PhoneNumber = @PhoneNumber, 
+                                 Username = @Username, 
+                                 Password = @Password, 
+                                 Role = @Role 
+                                 WHERE AdminID = @AdminID";
+
+                using SqlCommand cmd = new SqlCommand(query, sqlCon);
                 cmd.Parameters.AddWithValue("@FirstName", admin.FirstName);
                 cmd.Parameters.AddWithValue("@LastName", admin.LastName);
                 cmd.Parameters.AddWithValue("@Email", admin.Email);
@@ -29,101 +166,53 @@ namespace CarConnect.Dao
                 cmd.Parameters.AddWithValue("@Username", admin.Username);
                 cmd.Parameters.AddWithValue("@Password", admin.Password);
                 cmd.Parameters.AddWithValue("@Role", admin.Role);
-                cmd.Parameters.AddWithValue("@JoinDate", admin.JoinDate);
-
-                _conn.Open();
-                cmd.ExecuteNonQuery();
-            }
-        }
-
-        public Admin GetAdminById(int adminId)
-        {
-            string query = "SELECT * FROM Admin WHERE AdminID = @AdminID";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
-            {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@AdminID", adminId);
-                _conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                Admin admin = null;
-                if (reader.Read())
-                {
-                    admin = MapToAdmin(reader);
-                }
-
-                return admin;
-            }
-        }
-
-        public Admin GetAdminByUsername(string username)
-        {
-            string query = "SELECT * FROM Admin WHERE Username = @Username";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
-            {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@Username", username);
-                _conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                Admin admin = null;
-                if (reader.Read())
-                {
-                    admin = MapToAdmin(reader);
-                }
-
-                return admin;
-            }
-        }
-
-        public void UpdateAdmin(Admin admin)
-        {
-            string query = "UPDATE Admin SET FirstName=@FirstName, LastName=@LastName, Email=@Email, PhoneNumber=@PhoneNumber, Password=@Password, Role=@Role WHERE AdminID=@AdminID";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
-            {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@FirstName", admin.FirstName);
-                cmd.Parameters.AddWithValue("@LastName", admin.LastName);
-                cmd.Parameters.AddWithValue("@Email", admin.Email);
-                cmd.Parameters.AddWithValue("@PhoneNumber", admin.PhoneNumber);
-                cmd.Parameters.AddWithValue("@Password", admin.Password);
-                cmd.Parameters.AddWithValue("@Role", admin.Role);
                 cmd.Parameters.AddWithValue("@AdminID", admin.AdminId);
 
-                _conn.Open();
                 cmd.ExecuteNonQuery();
+                return admin;
             }
-        }
-
-        public void DeleteAdmin(int adminId)
-        {
-            string query = "DELETE FROM Admin WHERE AdminID = @AdminID";
-
-            using (SqlConnection _conn = new SqlConnection(_connectionString))
+            catch (SqlException ex)
             {
-                SqlCommand cmd = new SqlCommand(query, _conn);
-                cmd.Parameters.AddWithValue("@AdminID", adminId);
-                _conn.Open();
-                cmd.ExecuteNonQuery();
+                Console.WriteLine("SQL Error: " + ex.Message);
+                throw;
             }
         }
 
+        // Delete Admin
+        public bool DeleteAdmin(int adminId)
+        {
+            try
+            {
+                using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
+                sqlCon.Open();
+
+                using SqlCommand cmd = new SqlCommand("DELETE FROM Admin WHERE AdminID = @AdminID", sqlCon);
+                cmd.Parameters.AddWithValue("@AdminID", adminId);
+                int rowsAffected = cmd.ExecuteNonQuery();
+
+                return rowsAffected > 0;
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("SQL Error: " + ex.Message);
+                return false;
+            }
+        }
+
+        // Map reader to Admin entity
         private Admin MapToAdmin(SqlDataReader reader)
         {
             return new Admin
             {
-                AdminId = Convert.ToInt32(reader["AdminID"]),
-                FirstName = reader["FirstName"].ToString(),
-                LastName = reader["LastName"].ToString(),
-                Email = reader["Email"].ToString(),
-                PhoneNumber = reader["PhoneNumber"].ToString(),
-                Username = reader["Username"].ToString(),
-                Password = reader["Password"].ToString(),
-                Role = reader["Role"].ToString(),
-                JoinDate = Convert.ToDateTime(reader["JoinDate"])
+                AdminId = reader.GetInt32(0),
+                FirstName = reader.GetString(1),
+                LastName = reader.GetString(2),
+                Email = reader.GetString(3),
+                PhoneNumber = reader.GetString(4),
+                Username = reader.GetString(5),
+                Password = reader.GetString(6),
+                Role = reader.GetString(7),
+                JoinDate = reader.GetDateTime(8)
             };
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Data.SqlClient;
 using System;
 using System.IO;
 using System.Reflection;
@@ -7,39 +8,15 @@ namespace CarConnect.Util
 {
     public static class DBPropertyUtil
     {
-        private static readonly IConfigurationRoot _configuration;
-
-        static DBPropertyUtil()
+        public static string GetConnectionString(string filePath)
         {
-            try
-            {
-                // Get path where the executable is running (bin/Debug/net8.0)
-                string exePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-
-                // Build configuration from appsettings.json in the output path
-                _configuration = new ConfigurationBuilder()
-                    .SetBasePath(exePath)
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                    .Build();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("⚠️ Failed to load configuration.");
-                Console.WriteLine($"Error: {ex.Message}");
-                throw;
-            }
-        }
-
-        public static string GetConnectionString()
-        {
-            string? connectionString = _configuration.GetConnectionString("DefaultConnection");
-
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            }
-
-            return connectionString;
+            //This code will search current working directory (debug folder) and it will load your setting file into it
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(filePath);
+            var config = builder.Build();
+            var connectionString = config.GetConnectionString("DefaultConnection");
+            return connectionString ?? throw new InvalidOperationException("Connection String Not Found");
         }
     }
 }
