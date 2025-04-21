@@ -15,6 +15,7 @@ namespace CarConnect.Entity
         public DateTime EndDate { get; set; }
         public string? Status { get; set; } // e.g., "Pending", "Confirmed", "Cancelled"
         public decimal TotalCost { get; set; }
+        public long vid { get; internal set; }
 
         public Reservation() { }
         public Reservation(int reservationId, int customerId, int vehicleId, DateTime startDate, DateTime endDate, string status)

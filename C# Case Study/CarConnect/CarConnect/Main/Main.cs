@@ -330,8 +330,8 @@ public class MainModule
 
             if (customer == null) throw new InvalidInputException("Customer not found.");
 
-            int vid = GetIntFromUser("Vehicle ID: ");// Get vehicle ID
-            var vehicle = VehicleDao.GetVehicleById(vid);
+            long vid = GetLongFromUser("Vehicle ID: "); // Use long instead of int
+            var vehicle = VehicleDao.GetVehicleById((int)vid);
 
             if (vehicle == null) throw new InvalidInputException("Vehicle not found.");
 
@@ -344,20 +344,27 @@ public class MainModule
             Reservation reservation = new Reservation
             {
                 CustomerId = customer.CustomerId,
-                VehicleId = vid,
+                VehicleId = (int)vid,
                 StartDate = start,
                 EndDate = end,
                 TotalCost = (end - start).Days * vehicle.DailyRate,
                 Status = "Confirmed"
             };
 
-            ReservationDao.CreateReservation(reservation);// Create the reservation
+            ReservationDao.CreateReservation(reservation); // Create the reservation
             Console.WriteLine("Reservation successful.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+    }
+
+    static long GetLongFromUser(string prompt)
+    {
+        Console.Write(prompt);
+        string input = Console.ReadLine();
+        return long.TryParse(input, out long value) ? value : throw new FormatException("Invalid number");
     }
     // Method to view reservation by ID
     static void ViewReservationById()
