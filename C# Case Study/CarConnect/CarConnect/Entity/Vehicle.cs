@@ -8,7 +8,9 @@ namespace CarConnect.Entity
 {
     public class Vehicle
     {
-        public int VehicleId { get; set; }
+        public long
+            
+            VehicleId { get; set; }
         public string? Model { get; set; }
         public string? Make { get; set; }
         public string? Year { get; set; }

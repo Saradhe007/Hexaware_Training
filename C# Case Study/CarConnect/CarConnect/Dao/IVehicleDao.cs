@@ -10,7 +10,8 @@ namespace CarConnect.Dao
         bool RemoveVehicle(int vehicleId); 
         T GetVehicleById(int vehicleId);
         List<T> GetAvailableVehicles();
-        List<T> GetAllVehicles();          
+        List<T> GetAllVehicles(); 
+        
     }
 
 

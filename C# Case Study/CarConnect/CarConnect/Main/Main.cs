@@ -200,28 +200,29 @@ public class MainModule
     {
         try
         {
-
             var vehicles = VehicleDao.GetAvailableVehicles(); // Get the list of available vehicles
+
             if (vehicles == null || vehicles.Count == 0)
             {
                 Console.WriteLine("No vehicles are currently available.");
                 return;
             }
+
             Console.WriteLine("Available Vehicles:");
             foreach (var v in vehicles)
             {
-                // Ensure the rate is properly formatted (e.g., Rs. 2000.00)
+                
                 Console.WriteLine($"{v.VehicleId}: {v.Make} {v.Model}, Rs {v.DailyRate:F2}/day");
             }
         }
         catch (ArgumentNullException ex)
         {
-            // Handle specific exceptions such as when data is null
+       
             Console.WriteLine("Error: The vehicle data could not be loaded. Please try again later.");
         }
         catch (Exception ex)
         {
-            // Generic error message with a clearer context
+            
             Console.WriteLine("An error occurred while retrieving the available vehicles: " + ex.Message);
         }
     }

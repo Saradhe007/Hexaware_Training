@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using CarConnect.Entity;
 using CarConnect.Util;
-using CarConnect.Dao;
 using Microsoft.Data.SqlClient;
 
 namespace CarConnect.Dao
@@ -27,7 +26,7 @@ namespace CarConnect.Dao
                 cmd.Parameters.AddWithValue("@DailyRate", vehicle.DailyRate);
 
                 var insertedId = cmd.ExecuteScalar();
-                vehicle.VehicleId = Convert.ToInt32(insertedId);
+                vehicle.VehicleId = Convert.ToInt64(insertedId); 
                 return vehicle;
             }
             catch (Exception ex)
@@ -37,7 +36,7 @@ namespace CarConnect.Dao
             }
         }
 
-        public Vehicle GetVehicleById(int vehicleId)
+        public Vehicle GetVehicleById(long vehicleId) 
         {
             try
             {
@@ -109,7 +108,7 @@ namespace CarConnect.Dao
             }
         }
 
-        public bool RemoveVehicle(int vehicleId)
+        public bool RemoveVehicle(long vehicleId) // Change to long to match VehicleId type
         {
             try
             {
@@ -125,6 +124,7 @@ namespace CarConnect.Dao
                 return false;
             }
         }
+
         public List<Vehicle> GetAllVehicles()
         {
             var list = new List<Vehicle>();
@@ -150,15 +150,25 @@ namespace CarConnect.Dao
         {
             return new Vehicle
             {
-                VehicleId = reader.GetInt32(0),
+                VehicleId = reader.GetInt64(0), // Use GetInt64 for long values
                 Model = reader.GetString(1),
                 Make = reader.GetString(2),
-                Year = reader.GetInt32(3).ToString(), 
+                Year = reader.GetInt32(3).ToString(), // Assuming Year is an integer, convert to string for consistency
                 Color = reader.GetString(4),
                 RegistrationNumber = reader.GetString(5),
                 Availability = reader.GetBoolean(6),
                 DailyRate = reader.GetDecimal(7)
             };
+        }
+
+        public bool RemoveVehicle(int vehicleId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Vehicle GetVehicleById(int vehicleId)
+        {
+            throw new NotImplementedException();
         }
     }
 }
