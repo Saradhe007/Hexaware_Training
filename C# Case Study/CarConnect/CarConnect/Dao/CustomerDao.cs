@@ -6,7 +6,7 @@ using CarConnect.Entity;
 using CarConnect.Dao;
 using CarConnect.Util;
 
-namespace CarConnectApp.DAO
+namespace CarConnect.Dao
 {
     public class CustomerDao : ICustomerDao
     {

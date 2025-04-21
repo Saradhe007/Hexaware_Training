@@ -5,7 +5,7 @@ using CarConnect.Util;
 using CarConnect.Dao;
 using Microsoft.Data.SqlClient;
 
-namespace CarConnectApp.DAO
+namespace CarConnect.Dao
 {
     public class VehicleDao : IVehicleDao<Vehicle>
     {
@@ -153,7 +153,7 @@ namespace CarConnectApp.DAO
                 VehicleId = reader.GetInt32(0),
                 Model = reader.GetString(1),
                 Make = reader.GetString(2),
-                Year = reader.GetString(3),
+                Year = reader.GetInt32(3).ToString(), 
                 Color = reader.GetString(4),
                 RegistrationNumber = reader.GetString(5),
                 Availability = reader.GetBoolean(6),

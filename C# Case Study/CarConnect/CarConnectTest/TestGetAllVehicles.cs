@@ -10,7 +10,7 @@ namespace CarConnectAppTest
     [TestFixture]
     public class TestGetAllVehicles
     {
-        private Mock<IVehicleDao> _mockVehicleDao;
+        private Mock<IVehicleDao<Vehicle>> _mockVehicleDao;
 
         [SetUp]
         public void Setup()
@@ -22,7 +22,7 @@ namespace CarConnectAppTest
                 new Vehicle { VehicleId = 3 }
             };
 
-            _mockVehicleDao = new Mock<IVehicleDao>();
+            _mockVehicleDao = new Mock<IVehicleDao<Vehicle>>();
             _mockVehicleDao.Setup(dao => dao.GetAllVehicles()).Returns(allVehicles);
         }
 

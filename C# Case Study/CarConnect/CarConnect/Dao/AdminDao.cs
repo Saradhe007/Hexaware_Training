@@ -5,7 +5,7 @@ using CarConnect.Entity;
 using CarConnect.exception;
 using CarConnect.Util;
 
-namespace CarConnectApp.DAO
+namespace CarConnect.Dao
 {
     public class AdminDao : IAdminDao<Admin>
     {

@@ -10,14 +10,14 @@ namespace CarConnectAppTest
     [TestFixture]
     public class TestAddVehicle
     {
-        private Mock<IVehicleDao> _mockVehicleDao;
+        private Mock<IVehicleDao<Vehicle>> _mockVehicleDao;
         private List<Vehicle> _mockDB;
 
         [SetUp]
         public void Setup()
         {
             _mockDB = new List<Vehicle>();
-            _mockVehicleDao = new Mock<IVehicleDao>();
+            _mockVehicleDao = new Mock<IVehicleDao<Vehicle>>();
 
             // Fix: Use the correct method signature for Moq's Setup and Returns
             _mockVehicleDao.Setup(dao => dao.AddVehicle(It.IsAny<Vehicle>()))

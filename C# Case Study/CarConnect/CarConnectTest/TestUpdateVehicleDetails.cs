@@ -9,7 +9,7 @@ namespace CarConnectAppTest
     [TestFixture]
     public class TestUpdateVehicleDetails
     {
-        private Mock<IVehicleDao> _mockVehicleDao;
+        private Mock<IVehicleDao<Vehicle>> _mockVehicleDao;
         private Vehicle _mockVehicle;
 
         [SetUp]
@@ -20,13 +20,28 @@ namespace CarConnectAppTest
                 VehicleId = 1,
                 Model = "X5",
                 Make = "BMW",
+                Year = "2020",
+                Color = "Black",
+                RegistrationNumber = "TN09BMW9999",
+                Availability = true,
                 DailyRate = 1000
             };
 
-            _mockVehicleDao = new Mock<IVehicleDao>();
-            _mockVehicleDao.Setup(dao => dao.GetVehicleById(1)).Returns(_mockVehicle);
+            _mockVehicleDao = new Mock<IVehicleDao<Vehicle>>();
+
+            // Setup GetVehicleById to return the mock vehicle
+            _mockVehicleDao.Setup(dao => dao.GetVehicleById(1))
+                           .Returns(_mockVehicle);
+
+            // Setup UpdateVehicle to just replace values in _mockVehicle
             _mockVehicleDao.Setup(dao => dao.UpdateVehicle(It.IsAny<Vehicle>()))
-                .Callback<Vehicle>(v => _mockVehicle = v);
+                           .Callback<Vehicle>(v =>
+                           {
+                               _mockVehicle.Make = v.Make;
+                               _mockVehicle.Model = v.Model;
+                               _mockVehicle.DailyRate = v.DailyRate;
+                               _mockVehicle.Color = v.Color;
+                           });
         }
 
         [Test]
