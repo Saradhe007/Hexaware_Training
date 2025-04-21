@@ -19,7 +19,7 @@ namespace CarConnect.Entity
 
         public string? Role { get; set; }
         public DateTime JoinDate { get; set; }
-
+        // Constructor
         public Admin() { }
         public Admin(int adminId, string firstName, string lastName, string email,
             string phoneNumber, string address, string username, string password, string role, DateTime joinDate)
@@ -38,7 +38,7 @@ namespace CarConnect.Entity
 
         public bool Authenticate(string password)
         {
-            // Implemented authentication logic here
+           
             return Password == password;
         }
 

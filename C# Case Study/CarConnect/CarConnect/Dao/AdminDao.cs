@@ -24,14 +24,14 @@ namespace CarConnect.Dao
 
                 using SqlCommand cmd = new SqlCommand(query, sqlCon);
                 cmd.Parameters.AddWithValue("@Username", username);
-                cmd.Parameters.AddWithValue("@Password", password); // Ideally, you'd hash the password before storing/fetching
+                cmd.Parameters.AddWithValue("@Password", password); 
 
                 using SqlDataReader reader = cmd.ExecuteReader();
 
                 if (reader.HasRows) // If a record is found
                 {
-                    // Assuming we get the data from the reader and map it to an Admin object
-                    reader.Read(); // Move to the first (and hopefully only) row
+                    
+                    reader.Read(); 
                     Admin admin = new Admin
                     {
                         FirstName = reader["FirstName"].ToString(),
@@ -65,10 +65,9 @@ namespace CarConnect.Dao
                 using SqlConnection sqlCon = DBConnUtil.GetConnection("appsettings.json");
                 sqlCon.Open();
 
-                // SQL query to insert a new Admin record into the database
                 string query = @"INSERT INTO Admin 
-                                 (FirstName, LastName, Email, PhoneNumber, Username, Password, Role, JoinDate)
-                                 VALUES (@FirstName, @LastName, @Email, @PhoneNumber, @Username, @Password, @Role, @JoinDate)";
+                         (FirstName, LastName, Email,PhoneNUmber, Username, Password, Role, JoinDate)
+                         VALUES (@FirstName, @LastName, @Email,@PhoneNUmber, @Username, @Password, @Role, @JoinDate)";
 
                 using SqlCommand cmd = new SqlCommand(query, sqlCon);
                 cmd.Parameters.AddWithValue("@FirstName", admin.FirstName);
@@ -76,19 +75,21 @@ namespace CarConnect.Dao
                 cmd.Parameters.AddWithValue("@Email", admin.Email);
                 cmd.Parameters.AddWithValue("@PhoneNumber", admin.PhoneNumber);
                 cmd.Parameters.AddWithValue("@Username", admin.Username);
-                cmd.Parameters.AddWithValue("@Password", admin.Password); // Ideally, hash the password
+                cmd.Parameters.AddWithValue("@Password", admin.Password);
+
                 cmd.Parameters.AddWithValue("@Role", admin.Role);
                 cmd.Parameters.AddWithValue("@JoinDate", admin.JoinDate);
 
                 cmd.ExecuteNonQuery();
-                return admin; // Return the Admin after registering it
+                return admin;
             }
             catch (Exception ex)
             {
-                // Handle the exception
                 throw new Exception("Error during registration process: " + ex.Message);
             }
         }
+
+
 
         // Get Admin by ID
         public Admin GetAdminById(int adminId)
@@ -104,7 +105,7 @@ namespace CarConnect.Dao
                 using SqlDataReader reader = cmd.ExecuteReader();
                 if (reader.Read())
                 {
-                    return MapToAdmin(reader);
+                    return MapToAdmin(reader);  // Map the data to Admin object
                 }
             }
             catch (SqlException ex)

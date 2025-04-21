@@ -49,7 +49,8 @@ public class MainModule
 
             Console.Write("Enter your choice: ");
             string choice = Console.ReadLine();
-
+           
+            // Validate the input
             switch (choice)
             {
                 case "1": RegisterCustomer(); break;
@@ -77,7 +78,7 @@ public class MainModule
             }
         }
     }
-
+    /// Method to register a new customer
     static void RegisterCustomer()
     {
         try
@@ -117,7 +118,7 @@ public class MainModule
             Console.WriteLine("An error occurred while registering the customer: " + ex.Message);
         }
     }
-
+    /// Method to update customer information
     static void UpdateCustomer()
     {
         try
@@ -158,7 +159,7 @@ public class MainModule
         }
     }
 
-
+    /// Method to delete a customer
     static void DeleteCustomer()
     {
         try
@@ -195,7 +196,7 @@ public class MainModule
         }
     }
 
-
+    /// Method to show available vehicles
     static void ShowAvailableVehicles()
     {
         try
@@ -260,7 +261,7 @@ public class MainModule
         Console.Write(prompt);
         return Console.ReadLine();
     }
-
+    //  method to add a vehicle
     static void AddVehicle()
     {
         try
@@ -284,12 +285,12 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to update vehicle information
     static void UpdateVehicle()
     {
         try
         {
-            int id = GetIntFromUser("Vehicle Id: ");
+            int id = GetIntFromUser("Vehicle Id: ");// Get vehicle ID from user
             Vehicle vehicle = VehicleDao.GetVehicleById(id);
 
             if (vehicle == null) throw new InvalidInputException("Vehicle not found.");
@@ -297,7 +298,7 @@ public class MainModule
             vehicle.Color = GetStringFromUser("New Color: ");
             vehicle.DailyRate = decimal.Parse(GetStringFromUser("New Rate: "));
 
-            VehicleDao.UpdateVehicle(vehicle);
+            VehicleDao.UpdateVehicle(vehicle);// Update the vehicle in the database
             Console.WriteLine("Vehicle updated.");
         }
         catch (Exception ex)
@@ -305,7 +306,7 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to delete a vehicle
     static void DeleteVehicle()
     {
         try
@@ -319,17 +320,17 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to make a reservation
     static void MakeReservation()
     {
         try
         {
-            string uname = GetStringFromUser("Customer Username: ");
+            string uname = GetStringFromUser("Customer Username: "); // Get customer username
             Customer customer = CustomerDao.GetCustomerByUsername(uname);
 
             if (customer == null) throw new InvalidInputException("Customer not found.");
 
-            int vid = GetIntFromUser("Vehicle ID: ");
+            int vid = GetIntFromUser("Vehicle ID: ");// Get vehicle ID
             var vehicle = VehicleDao.GetVehicleById(vid);
 
             if (vehicle == null) throw new InvalidInputException("Vehicle not found.");
@@ -350,7 +351,7 @@ public class MainModule
                 Status = "Confirmed"
             };
 
-            ReservationDao.CreateReservation(reservation);
+            ReservationDao.CreateReservation(reservation);// Create the reservation
             Console.WriteLine("Reservation successful.");
         }
         catch (Exception ex)
@@ -358,13 +359,13 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to view reservation by ID
     static void ViewReservationById()
     {
         try
         {
             int id = GetIntFromUser("Reservation Id: ");
-            var reservation = ReservationDao.GetReservationById(id);
+            var reservation = ReservationDao.GetReservationById(id);// Get reservation by ID
 
             if (reservation == null)
                 throw new InvalidInputException("Reservation not found.");
@@ -376,7 +377,7 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to view reservations by customer
     static void ViewReservationsByCustomer()
     {
         try
@@ -389,7 +390,7 @@ public class MainModule
                 Console.WriteLine("No reservations found for this customer.");
                 return;
             }
-
+            // Display the reservations
             foreach (var reservation in reservations)
             {
                 Console.WriteLine($"{reservation.ReservationId}: Vehicle {reservation.VehicleId}, Rs{reservation.TotalCost}, Status: {reservation.Status}");
@@ -400,11 +401,11 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to update reservation status
     static void UpdateReservation()
     {
         try
-        {
+        {// Get reservation ID
             int id = GetIntFromUser("Reservation Id: ");
             var reservation = ReservationDao.GetReservationById(id);
 
@@ -412,7 +413,7 @@ public class MainModule
 
             string status = GetStringFromUser("New Status (Confirmed/Canceled): ");
             reservation.Status = status;
-
+            // Update the reservation status
             ReservationDao.UpdateReservation(reservation);
             Console.WriteLine("Reservation updated.");
         }
@@ -421,7 +422,7 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to cancel a reservation
     static void CancelReservation()
     {
         try
@@ -435,7 +436,7 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to handle admin login
     static void AdminLogin()
     {
         try
@@ -446,22 +447,46 @@ public class MainModule
             IAdminDao<Admin> adminService = new AdminDao();
             Admin admin = adminService.AdminLogin(username, password);
 
-            Console.WriteLine("Login successful.");
+            Console.WriteLine("Login successful.");// Display admin details
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to register a new admin
     static void RegisterAdmin()
     {
         try
         {
+            Console.Write("First Name: ");
+            string firstName = Console.ReadLine();
+
+            Console.Write("Last Name: ");
+            string lastName = Console.ReadLine();
+
+            Console.Write("Email: ");
+            string email = Console.ReadLine();
+
+            Console.Write("PhoneNumber: ");
+            string phoneNumber = Console.ReadLine();
+
+            Console.Write("Username: ");
+            string username = Console.ReadLine();
+
+            Console.Write("Password: ");
+            string password = Console.ReadLine();
+
             Admin admin = new Admin
             {
-                Username = GetStringFromUser("Username: "),
-                Password = GetStringFromUser("Password: ")
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                PhoneNumber = phoneNumber,
+                Username = username,
+                Password = password,
+                Role = "Admin",
+                JoinDate = DateTime.Now
             };
 
             AdminDao.RegisterAdmin(admin);
@@ -472,7 +497,7 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to update admin information
     static void UpdateAdmin()
     {
         try
@@ -491,10 +516,10 @@ public class MainModule
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
+    // Method to delete an admin
     static void DeleteAdmin()
     {
-        try
+        try// Validate the input for valid integer
         {
             int adminId = GetIntFromUser("Admin Id: ");
             bool success = AdminDao.DeleteAdmin(adminId);
