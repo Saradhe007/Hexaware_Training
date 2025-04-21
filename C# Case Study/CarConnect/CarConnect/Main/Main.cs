@@ -114,7 +114,7 @@ public class MainModule
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine("An error occurred while registering the customer: " + ex.Message);
         }
     }
 
@@ -123,81 +123,164 @@ public class MainModule
         try
         {
             Console.Write("Customer Id to update: ");
-            int id = int.Parse(Console.ReadLine());
-            Customer customer = CustomerDao.GetCustomerById(id);
+            int id;
+            if (!int.TryParse(Console.ReadLine(), out id))  // Validate the ID input
+            {
+                Console.WriteLine("Invalid input. Please enter a valid numeric customer ID.");
+                return;
+            }
 
-            if (customer == null) throw new InvalidInputException("Customer not found.");
+            Customer customer = CustomerDao.GetCustomerById(id);   // Fetch the customer
 
-            Console.Write("New Email: ");
+            if (customer == null)
+            {
+                Console.WriteLine("Customer not found.");
+                return;
+            }
+            Console.Write("New Email: ");     // Update customer information
             customer.Email = Console.ReadLine();
             Console.Write("New Phone: ");
             customer.PhoneNumber = Console.ReadLine();
-
-            CustomerDao.UpdateCustomer(customer);
-            Console.WriteLine("Customer updated.");
+            CustomerDao.UpdateCustomer(customer);  // Update the customer in the database
+            Console.WriteLine("Customer updated successfully.");
+        }
+        catch (InvalidInputException ex)
+        {
+            Console.WriteLine("Error: " + ex.Message); // Custom error message for InvalidInputException
+        }
+        catch (FormatException ex)
+        {
+            Console.WriteLine("Invalid format. Please ensure the ID is a number.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine("An unexpected error occurred: " + ex.Message);
         }
     }
+
 
     static void DeleteCustomer()
     {
         try
         {
-            Console.Write("Customer Id: ");
-            int id = int.Parse(Console.ReadLine());
-            CustomerDao.DeleteCustomer(id);
-            Console.WriteLine("Customer deleted.");
+            Console.Write("Enter Customer Id to delete: ");
+            int id;
+            if (!int.TryParse(Console.ReadLine(), out id))// Validate the input for valid integer
+            {
+                Console.WriteLine("Invalid input. Please enter a valid numeric customer ID.");
+                return;
+            }
+            bool success = CustomerDao.DeleteCustomer(id);// Attempt to delete the customer
+
+            if (success)
+            {
+                Console.WriteLine("Customer deleted successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Customer not found. Deletion failed.");
+            }
+        }
+        catch (FormatException ex)
+        {
+            Console.WriteLine("Invalid format. Please ensure the ID is a number.");
+        }
+        catch (InvalidInputException ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);  // Handle specific custom exception
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine("An unexpected error occurred: " + ex.Message);
         }
     }
+
 
     static void ShowAvailableVehicles()
     {
         try
         {
-            var vehicles = VehicleDao.GetAvailableVehicles();
+
+            var vehicles = VehicleDao.GetAvailableVehicles(); // Get the list of available vehicles
+            if (vehicles == null || vehicles.Count == 0)
+            {
+                Console.WriteLine("No vehicles are currently available.");
+                return;
+            }
+            Console.WriteLine("Available Vehicles:");
             foreach (var v in vehicles)
             {
-                Console.WriteLine($"{v.VehicleId}: {v.Make} {v.Model}, Rs{v.DailyRate}/day");
+                // Ensure the rate is properly formatted (e.g., Rs. 2000.00)
+                Console.WriteLine($"{v.VehicleId}: {v.Make} {v.Model}, Rs {v.DailyRate:F2}/day");
             }
+        }
+        catch (ArgumentNullException ex)
+        {
+            // Handle specific exceptions such as when data is null
+            Console.WriteLine("Error: The vehicle data could not be loaded. Please try again later.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            // Generic error message with a clearer context
+            Console.WriteLine("An error occurred while retrieving the available vehicles: " + ex.Message);
         }
+    }
+
+
+    // Helper method to safely parse integers
+    static int GetIntFromUser(string prompt)
+    {
+        int result;
+        while (true)
+        {
+            Console.Write(prompt);
+            if (int.TryParse(Console.ReadLine(), out result))
+                return result;
+            Console.WriteLine("Invalid input. Please enter a valid number.");
+        }
+    }
+
+    // Helper method to safely parse dates
+    static DateTime GetDateFromUser(string prompt)
+    {
+        DateTime result;
+        while (true)
+        {
+            Console.Write(prompt);
+            if (DateTime.TryParse(Console.ReadLine(), out result))
+                return result;
+            Console.WriteLine("Invalid date format. Please use yyyy-mm-dd.");
+        }
+    }
+
+    // Helper method for reading a string input with validation
+    static string GetStringFromUser(string prompt)
+    {
+        Console.Write(prompt);
+        return Console.ReadLine();
     }
 
     static void AddVehicle()
     {
         try
         {
-            Vehicle vehicle = new Vehicle();
-            Console.Write("Make: ");
-            vehicle.Make = Console.ReadLine();
-            Console.Write("Model: ");
-            vehicle.Model = Console.ReadLine();
-            Console.Write("Year: ");
-            vehicle.Year = Console.ReadLine();
-            Console.Write("Color: ");
-            vehicle.Color = Console.ReadLine();
-            Console.Write("Registration Number: ");
-            vehicle.RegistrationNumber = Console.ReadLine();
-            Console.Write("Rate: ");
-            vehicle.DailyRate = decimal.Parse(Console.ReadLine());
-            vehicle.Availability = true;
+            Vehicle vehicle = new Vehicle
+            {
+                Make = GetStringFromUser("Make: "),
+                Model = GetStringFromUser("Model: "),
+                Year = GetStringFromUser("Year: "),
+                Color = GetStringFromUser("Color: "),
+                RegistrationNumber = GetStringFromUser("Registration Number: "),
+                DailyRate = decimal.Parse(GetStringFromUser("Rate: ")),
+                Availability = true
+            };
 
             VehicleDao.AddVehicle(vehicle);
             Console.WriteLine("Vehicle added.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -205,21 +288,20 @@ public class MainModule
     {
         try
         {
-            Console.Write("Vehicle Id: ");
-            int id = int.Parse(Console.ReadLine());
+            int id = GetIntFromUser("Vehicle Id: ");
             Vehicle vehicle = VehicleDao.GetVehicleById(id);
+
             if (vehicle == null) throw new InvalidInputException("Vehicle not found.");
 
-            Console.Write("New Color: ");
-            vehicle.Color = Console.ReadLine();
-            Console.Write("New Rate: ");
-            vehicle.DailyRate = decimal.Parse(Console.ReadLine());
+            vehicle.Color = GetStringFromUser("New Color: ");
+            vehicle.DailyRate = decimal.Parse(GetStringFromUser("New Rate: "));
+
             VehicleDao.UpdateVehicle(vehicle);
             Console.WriteLine("Vehicle updated.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -227,14 +309,13 @@ public class MainModule
     {
         try
         {
-            Console.Write("Vehicle Id: ");
-            int id = int.Parse(Console.ReadLine());
+            int id = GetIntFromUser("Vehicle Id: ");
             VehicleDao.RemoveVehicle(id);
             Console.WriteLine("Vehicle removed.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -242,27 +323,25 @@ public class MainModule
     {
         try
         {
-            Console.Write("Customer Username: ");
-            string uname = Console.ReadLine();
-            Customer c = CustomerDao.GetCustomerByUsername(uname);
-            if (c == null) throw new InvalidInputException("Customer not found.");
+            string uname = GetStringFromUser("Customer Username: ");
+            Customer customer = CustomerDao.GetCustomerByUsername(uname);
 
-            Console.Write("Vehicle ID: ");
-            int vid = int.Parse(Console.ReadLine());
+            if (customer == null) throw new InvalidInputException("Customer not found.");
+
+            int vid = GetIntFromUser("Vehicle ID: ");
             var vehicle = VehicleDao.GetVehicleById(vid);
+
             if (vehicle == null) throw new InvalidInputException("Vehicle not found.");
 
-            Console.Write("Start Date (yyyy-mm-dd): ");
-            DateTime start = DateTime.Parse(Console.ReadLine());
-            Console.Write("End Date (yyyy-mm-dd): ");
-            DateTime end = DateTime.Parse(Console.ReadLine());
+            DateTime start = GetDateFromUser("Start Date (yyyy-mm-dd): ");
+            DateTime end = GetDateFromUser("End Date (yyyy-mm-dd): ");
 
             if (start >= end)
                 throw new ReservationException("Start date must be before end date.");
 
             Reservation reservation = new Reservation
             {
-                CustomerId = c.CustomerId,
+                CustomerId = customer.CustomerId,
                 VehicleId = vid,
                 StartDate = start,
                 EndDate = end,
@@ -275,7 +354,7 @@ public class MainModule
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -283,14 +362,17 @@ public class MainModule
     {
         try
         {
-            Console.Write("Reservation Id: ");
-            int id = int.Parse(Console.ReadLine());
-            var r = ReservationDao.GetReservationById(id);
-            Console.WriteLine($"{r.ReservationId}: Vehicle {r.VehicleId}, {r.StartDate:dd/MM} - {r.EndDate:dd/MM}, Rs{r.TotalCost}");
+            int id = GetIntFromUser("Reservation Id: ");
+            var reservation = ReservationDao.GetReservationById(id);
+
+            if (reservation == null)
+                throw new InvalidInputException("Reservation not found.");
+
+            Console.WriteLine($"{reservation.ReservationId}: Vehicle {reservation.VehicleId}, {reservation.StartDate:dd/MM} - {reservation.EndDate:dd/MM}, Rs{reservation.TotalCost}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -298,17 +380,23 @@ public class MainModule
     {
         try
         {
-            Console.Write("Customer Id: ");
-            int id = int.Parse(Console.ReadLine());
-            var list = ReservationDao.GetReservationsByCustomerId(id);
-            foreach (var r in list)
+            int id = GetIntFromUser("Customer Id: ");
+            var reservations = ReservationDao.GetReservationsByCustomerId(id);
+
+            if (reservations == null || reservations.Count == 0)
             {
-                Console.WriteLine($"{r.ReservationId}: Vehicle {r.VehicleId}, Rs{r.TotalCost}, Status: {r.Status}");
+                Console.WriteLine("No reservations found for this customer.");
+                return;
+            }
+
+            foreach (var reservation in reservations)
+            {
+                Console.WriteLine($"{reservation.ReservationId}: Vehicle {reservation.VehicleId}, Rs{reservation.TotalCost}, Status: {reservation.Status}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -316,17 +404,20 @@ public class MainModule
     {
         try
         {
-            Console.Write("Reservation Id: ");
-            int id = int.Parse(Console.ReadLine());
-            var r = ReservationDao.GetReservationById(id);
-            Console.Write("New Status (Confirmed/Canceled): ");
-            r.Status = Console.ReadLine();
-            ReservationDao.UpdateReservation(r);
+            int id = GetIntFromUser("Reservation Id: ");
+            var reservation = ReservationDao.GetReservationById(id);
+
+            if (reservation == null) throw new InvalidInputException("Reservation not found.");
+
+            string status = GetStringFromUser("New Status (Confirmed/Canceled): ");
+            reservation.Status = status;
+
+            ReservationDao.UpdateReservation(reservation);
             Console.WriteLine("Reservation updated.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -334,14 +425,13 @@ public class MainModule
     {
         try
         {
-            Console.Write("Reservation Id: ");
-            int id = int.Parse(Console.ReadLine());
+            int id = GetIntFromUser("Reservation Id: ");
             ReservationDao.CancelReservation(id);
             Console.WriteLine("Reservation canceled.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -349,18 +439,17 @@ public class MainModule
     {
         try
         {
-            Console.Write("Admin Username: ");
-            string username = Console.ReadLine();
-            Console.Write("Password: ");
-            string password = Console.ReadLine();
+            string username = GetStringFromUser("Admin Username: ");
+            string password = GetStringFromUser("Password: ");
 
-            IAdminDao<Admin> adminService = new AdminDao(); 
+            IAdminDao<Admin> adminService = new AdminDao();
             Admin admin = adminService.AdminLogin(username, password);
+
             Console.WriteLine("Login successful.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -368,17 +457,18 @@ public class MainModule
     {
         try
         {
-            Admin admin = new Admin();
-            Console.Write("Username: ");
-            admin.Username = Console.ReadLine();
-            Console.Write("Password: ");
-            admin.Password = Console.ReadLine();
+            Admin admin = new Admin
+            {
+                Username = GetStringFromUser("Username: "),
+                Password = GetStringFromUser("Password: ")
+            };
+
             AdminDao.RegisterAdmin(admin);
             Console.WriteLine("Admin registered successfully.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -386,19 +476,18 @@ public class MainModule
     {
         try
         {
-            Console.Write("Admin Username: ");
-            string username = Console.ReadLine();
+            string username = GetStringFromUser("Admin Username: ");
             Admin admin = AdminDao.GetAdminByUsername(username);
+
             if (admin == null) throw new InvalidInputException("Admin not found.");
 
-            Console.Write("New Password: ");
-            admin.Password = Console.ReadLine();
+            admin.Password = GetStringFromUser("New Password: ");
             AdminDao.UpdateAdmin(admin);
             Console.WriteLine("Admin updated.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -406,14 +495,17 @@ public class MainModule
     {
         try
         {
-            Console.Write("Admin Id: "); 
-            int adminId = int.Parse(Console.ReadLine()); 
-            bool v = AdminDao.DeleteAdmin(adminId); 
-            Console.WriteLine("Admin deleted.");
+            int adminId = GetIntFromUser("Admin Id: ");
+            bool success = AdminDao.DeleteAdmin(adminId);
+
+            if (success)
+                Console.WriteLine("Admin deleted.");
+            else
+                Console.WriteLine("Admin deletion failed.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error: " + ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 }
