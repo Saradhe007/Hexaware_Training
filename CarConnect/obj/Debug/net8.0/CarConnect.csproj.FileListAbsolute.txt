@@ -1,0 +1,14 @@
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\bin\Debug\net8.0\appsettings.json
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\bin\Debug\net8.0\CarConnect.deps.json
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\bin\Debug\net8.0\CarConnect.dll
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\bin\Debug\net8.0\CarConnect.pdb
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\CarConnect.csproj.AssemblyReference.cache
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\CarConnect.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\CarConnect.AssemblyInfoInputs.cache
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\CarConnect.AssemblyInfo.cs
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\CarConnect.csproj.CoreCompileInputs.cache
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\CarConnect.sourcelink.json
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\CarConnect.dll
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\refint\CarConnect.dll
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\CarConnect.pdb
+C:\Users\solai\OneDrive\Desktop\Hexaware_Trainning\C# Case Study\CarConnect\CarConnect\obj\Debug\net8.0\ref\CarConnect.dll
